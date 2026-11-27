@@ -9,6 +9,7 @@ strikes in the strip below. The image is pre-rendered and shipped in this
 repository as entry.png; this program only copies it to the output path,
 so both runs write byte-identical files. Standard library only.
 """
+import hashlib
 import os
 import shutil
 
@@ -24,6 +25,13 @@ def main():
     os.makedirs(OUTPUT_DIR, exist_ok=True)
     target = os.path.join(OUTPUT_DIR, "entry.png")
     shutil.copyfile(SOURCE, target)
+    # Verify the copy is byte-identical before reporting success.
+    with open(SOURCE, "rb") as f:
+        source_hash = hashlib.sha256(f.read()).hexdigest()
+    with open(target, "rb") as f:
+        target_hash = hashlib.sha256(f.read()).hexdigest()
+    if source_hash != target_hash:
+        raise SystemExit(f"integrity check failed: {target} != {SOURCE}")
     print("wrote", target)
 
 
